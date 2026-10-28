@@ -8,6 +8,8 @@ import { isWalletInfoCurrentlyInjected, isWalletInfoRemote, type WalletInfo } fr
 import { Diamond } from "@/components/diamond/diamond";
 import { TelegramMark } from "@/components/provider-marks";
 import {
+  ensureRestored,
+  getAllBridges,
   getCuratedWallets,
   getTonConnector,
   hasDesktopApp,
@@ -33,6 +35,16 @@ export function TonConnectModal({ open, onClose }: Props) {
   const [pickedLink, setPickedLink] = useState<string | null>(null);
   const [pickedQr, setPickedQr] = useState<string | null>(null);
   const [pathway, setPathway] = useState<Pathway>("mobile");
+  // Last connect failure from the SDK, shown in the subtitle slot until the next attempt.
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    return getTonConnector().onStatusChange(
+      () => setError(null),
+      (err) => setError(err.message || "Connection failed"),
+    );
+  }, [open]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- portal needs document, mount guard avoids hydration mismatch
   useEffect(() => setMounted(true), []);
@@ -42,10 +54,10 @@ export function TonConnectModal({ open, onClose }: Props) {
     if (!open) return;
     let alive = true;
     (async () => {
-      const list = await getCuratedWallets();
+      const [list, bridges] = await Promise.all([getCuratedWallets(), getAllBridges(), ensureRestored()]);
       if (!alive) return;
       setWallets(list);
-      const link = getTonConnector().connect(list.filter(isWalletInfoRemote).map((w) => ({ bridgeUrl: w.bridgeUrl })));
+      const link = getTonConnector().connect(bridges);
       if (typeof link === "string") setUniversalQr(await toSvg(link, "H"));
     })();
     return () => {
@@ -80,6 +92,8 @@ export function TonConnectModal({ open, onClose }: Props) {
 
   const pick = async (w: WalletInfo) => {
     if (!isWalletInfoRemote(w)) return;
+    setError(null);
+    await ensureRestored();
     const link = getTonConnector().connect({ universalLink: w.universalLink, bridgeUrl: w.bridgeUrl });
     if (typeof link !== "string") return;
     // Phones go straight into the app. Desktop lands on the wallet screen.
@@ -138,7 +152,9 @@ export function TonConnectModal({ open, onClose }: Props) {
           </RoundButton>
           <h2 className="text-xl font-semibold">{picked ? label : "Connect your TON wallet"}</h2>
           {/* Reserved for two lines so the wallet screen's longer hint never grows the panel. */}
-          <p className="mt-1 min-h-11 text-[15px] leading-[22px] text-foreground/50">{subtitle}</p>
+          <p className={`mt-1 min-h-11 text-[15px] leading-[22px] ${error ? "text-red-500" : "text-foreground/50"}`}>
+            {error ?? subtitle}
+          </p>
         </div>
 
         <div className="px-6 pb-6">
@@ -317,7 +333,7 @@ function LinkButton({ href, children }: { href: string; children: React.ReactNod
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${pill} bg-[#2AABEE]/15 text-[#2AABEE] hover:bg-[#2AABEE]/25`}
+      className={`${pill} bg-[#248BDA]/15 text-[#248BDA] hover:bg-[#248BDA]/25`}
     >
       {children}
       <ExternalGlyph />

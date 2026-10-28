@@ -1,4 +1,4 @@
-import TonConnect, { type WalletInfo } from "@tonconnect/sdk";
+import TonConnect, { isWalletInfoRemote, type WalletInfo } from "@tonconnect/sdk";
 
 // Fetched by the wallet app, so it must be the public prod URL even in dev.
 const MANIFEST_URL = "https://form.magana.marketing/tonconnect-manifest.json";
@@ -25,11 +25,35 @@ export const hasExtension = (w: WalletInfo) =>
 export const hasDesktopApp = (w: WalletInfo) =>
   w.platforms.some((p) => p === "macos" || p === "windows" || p === "linux");
 
-// One connector per browser so every surface shares the same pairing.
-let connector: TonConnect | null = null;
+// One connector per browser tab, kept on globalThis so a hot reload of this module reuses it
+// instead of minting a second one that listens to nothing.
+type TonGlobal = { connector?: TonConnect; restored?: Promise<void> };
+const g = globalThis as typeof globalThis & { __formTon?: TonGlobal };
+const state: TonGlobal = (g.__formTon ??= {});
 
 export function getTonConnector(): TonConnect {
-  return (connector ??= new TonConnect({ manifestUrl: MANIFEST_URL }));
+  if (!state.connector) {
+    state.connector = new TonConnect({ manifestUrl: MANIFEST_URL });
+  }
+  return state.connector;
+}
+
+// restoreConnection must settle before any connect(), or its cleanup can tear down the new session.
+export function ensureRestored(): Promise<void> {
+  return (state.restored ??= getTonConnector()
+    .restoreConnection()
+    .then(
+      () => undefined,
+      () => undefined,
+    ));
+}
+
+// Every distinct bridge in the registry. The generic QR listens on all of them, since any
+// wallet can scan it and each replies on its own bridge (Telegram's wallet uses Telegram's).
+export async function getAllBridges(): Promise<{ bridgeUrl: string }[]> {
+  const all = await getTonConnector().getWallets();
+  const urls = new Set(all.filter(isWalletInfoRemote).map((w) => w.bridgeUrl));
+  return [...urls].map((bridgeUrl) => ({ bridgeUrl }));
 }
 
 // Registry entries for the curated wallets: live universal links, bridges and icons.

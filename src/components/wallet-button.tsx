@@ -5,7 +5,7 @@ import { toUserFriendlyAddress } from "@tonconnect/sdk";
 import { saveWalletAddress } from "@/app/actions/wallet";
 import { TonMark } from "@/components/provider-marks";
 import { TonConnectModal } from "@/components/ton-connect-modal";
-import { getTonConnector, shortAddress } from "@/lib/ton-connect-client";
+import { ensureRestored, getTonConnector, shortAddress } from "@/lib/ton-connect-client";
 
 type Props = { initialAddress: string | null };
 
@@ -19,15 +19,19 @@ export function WalletButton({ initialAddress }: Props) {
 
   useEffect(() => {
     const c = getTonConnector();
-    const unsubscribe = c.onStatusChange((wallet) => {
-      // A null here also fires on a cold restore, so only a real pairing writes through.
-      if (!wallet) return;
-      const friendly = toUserFriendlyAddress(wallet.account.address);
-      setAddr(friendly);
-      setModalOpen(false);
-      void saveWalletAddress(friendly);
-    });
-    void c.restoreConnection();
+    const unsubscribe = c.onStatusChange(
+      (wallet) => {
+        // A null here also fires on a cold restore, so only a real pairing writes through.
+        if (!wallet) return;
+        const friendly = toUserFriendlyAddress(wallet.account.address);
+        setAddr(friendly);
+        setModalOpen(false);
+        void saveWalletAddress(friendly);
+      },
+      // Manifest fetch failures, rejections and the like would otherwise vanish.
+      (err) => console.error("ton connect failed", err),
+    );
+    void ensureRestored();
     return unsubscribe;
   }, []);
 
@@ -64,7 +68,7 @@ export function WalletButton({ initialAddress }: Props) {
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          className="flex h-9 cursor-pointer select-none items-center gap-2 rounded-lg bg-[#2AABEE] px-3.5 text-[15px] leading-[18px] font-semibold text-white transition-opacity hover:opacity-90"
+          className="flex h-9 cursor-pointer select-none items-center gap-2 rounded-lg bg-[#248BDA] px-3.5 text-[15px] leading-[18px] font-semibold text-white transition-colors hover:bg-[#207CC2]"
         >
           <TonMark className="size-[18px]" />
           Connect TON
@@ -82,7 +86,7 @@ export function WalletButton({ initialAddress }: Props) {
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((v) => !v)}
         className={`flex h-9 cursor-pointer select-none items-center gap-2 rounded-lg px-3.5 text-[15px] leading-[18px] font-semibold transition-colors hover:transition-none ${
-          menuOpen ? "bg-[#2AABEE] text-white" : "bg-foreground/[0.06] hover:bg-foreground/[0.1]"
+          menuOpen ? "bg-[#248BDA] text-white" : "bg-foreground/[0.06] hover:bg-foreground/[0.1]"
         }`}
       >
         <TonMark className="size-[18px]" />

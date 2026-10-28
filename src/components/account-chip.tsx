@@ -36,7 +36,7 @@ export function AccountChip({ name, picture }: Props) {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={`flex h-9 cursor-pointer select-none items-center gap-[9px] rounded-lg pl-1.5 pr-3 text-[15px] leading-[18px] font-semibold transition-colors hover:transition-none ${
-          open ? "bg-[#2AABEE] text-white" : "bg-foreground/[0.06] hover:bg-foreground/[0.1]"
+          open ? "bg-[#248BDA] text-white" : "bg-foreground/[0.06] hover:bg-foreground/[0.1]"
         }`}
       >
         <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-foreground/10">
