@@ -40,7 +40,7 @@ export function TelegramButton({ href }: { href: string }) {
       onHoverEnd={() => setHovered(false)}
       // No hover scale: the icon slide carries the motion and the text stays pixel-sharp.
       whileTap={{ scale: 0.96 }}
-      className="flex h-10 cursor-pointer items-center justify-center rounded-md bg-[#2AABEE] px-6 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2AABEE]"
+      className="flex h-10 cursor-pointer select-none items-center justify-center rounded-md bg-[#2AABEE] px-6 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2AABEE]"
     >
       <AnimatePresence mode="popLayout">
         {!hovered && (

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toUserFriendlyAddress } from "@tonconnect/sdk";
 import { saveWalletAddress } from "@/app/actions/wallet";
+import { Caret } from "@/components/caret";
 import { TonMark } from "@/components/provider-marks";
 import { TonConnectModal } from "@/components/ton-connect-modal";
 import { ensureRestored, getTonConnector, shortAddress } from "@/lib/ton-connect-client";
@@ -85,12 +86,13 @@ export function WalletButton({ initialAddress }: Props) {
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((v) => !v)}
-        className={`flex h-9 cursor-pointer select-none items-center gap-2 rounded-lg px-3.5 text-[15px] leading-[18px] font-semibold transition-colors hover:transition-none ${
+        className={`flex h-9 cursor-pointer select-none items-center gap-2 rounded-lg pl-3.5 pr-3 text-[15px] leading-[18px] font-semibold transition-colors hover:transition-none ${
           menuOpen ? "bg-[#248BDA] text-white" : "bg-foreground/[0.06] hover:bg-foreground/[0.1]"
         }`}
       >
         <TonMark className="size-[18px]" />
         {shortAddress(addr)}
+        <Caret open={menuOpen} />
       </button>
 
       {menuOpen && (

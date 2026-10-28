@@ -1,16 +1,6 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { productSans } from "@/app/fonts";
 import "./globals.css";
-
-// Same two weights Fragment ships. Bold file maps to 600 like their stylesheet does.
-const productSans = localFont({
-  src: [
-    { path: "../fonts/ProductSansRegular.ttf", weight: "400", style: "normal" },
-    { path: "../fonts/ProductSansBold.ttf", weight: "600", style: "normal" },
-  ],
-  variable: "--font-product-sans",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   // Template without %s pins every tab to "Form", child titles are ignored.
@@ -22,7 +12,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${productSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/* Font class straight on body, so it never depends on globals.css being freshly compiled. */}
+      <body className={`${productSans.className} min-h-full flex flex-col`}>{children}</body>
     </html>
   );
 }
