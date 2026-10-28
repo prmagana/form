@@ -3,7 +3,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { OIDC_COOKIE, clearCookie, createSession, sessionCookie } from "@/lib/session";
-import { notify } from "@/lib/telegram-notify";
+import { escapeHtml, notify } from "@/lib/telegram-notify";
 import { exchangeCode, verifyIdToken } from "@/lib/telegram-oidc";
 
 type Pending = { state: string; nonce: string; verifier: string };
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
   if (row?.is_new) {
     // Off the request path so a slow Telegram API never delays the redirect.
     const { ctx } = await getCloudflareContext({ async: true });
-    ctx.waitUntil(notify(`New account\n${name ?? "unnamed"} · ${sub}`));
+    ctx.waitUntil(notify(`<b>New Account</b>\n${escapeHtml(name ?? "unnamed")} · ${sub}`));
   }
 
   const res = NextResponse.redirect(new URL("/", request.url));
