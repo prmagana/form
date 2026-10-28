@@ -7,7 +7,19 @@
   "routes": [{ "pattern": "form.magana.marketing", "custom_domain": true }],
   "compatibility_date": "2026-10-27",
   "compatibility_flags": ["nodejs_compat"],
+  // Public config. Secrets go in via `wrangler secret put`.
+  "vars": {
+    "TELEGRAM_CLIENT_ID": "9140708336"
+  },
   "upload_source_maps": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "form",
+      "database_id": "543fbb94-d822-449f-b441-333c0874f6d2",
+      "migrations_dir": "migrations"
+    }
+  ],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
