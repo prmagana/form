@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { OIDC_COOKIE, clearCookie, createSession, sessionCookie } from "@/lib/session";
+import { notify } from "@/lib/telegram-notify";
 import { exchangeCode, verifyIdToken } from "@/lib/telegram-oidc";
 
 type Pending = { state: string; nonce: string; verifier: string };
@@ -39,14 +41,22 @@ export async function GET(request: NextRequest) {
   }
 
   // Anyone with Telegram can sign in. First login creates the row, later ones refresh it.
+  // is_new falls out of the upsert: only a fresh insert has created_at equal to last_login_at.
   const now = new Date().toISOString();
-  await (await db())
+  const row = await (await db())
     .prepare(
       `INSERT INTO users (id, name, created_at, last_login_at) VALUES (?1, ?2, ?3, ?3)
-       ON CONFLICT(id) DO UPDATE SET name = excluded.name, last_login_at = excluded.last_login_at`,
+       ON CONFLICT(id) DO UPDATE SET name = excluded.name, last_login_at = excluded.last_login_at
+       RETURNING (created_at = last_login_at) AS is_new`,
     )
     .bind(sub, name, now)
-    .run();
+    .first<{ is_new: number }>();
+
+  if (row?.is_new) {
+    // Off the request path so a slow Telegram API never delays the redirect.
+    const { ctx } = await getCloudflareContext({ async: true });
+    ctx.waitUntil(notify(`New account\n${name ?? "unnamed"} · ${sub}`));
+  }
 
   const res = NextResponse.redirect(new URL("/", request.url));
   res.cookies.set(sessionCookie(await createSession(sub)));
