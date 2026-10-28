@@ -22,5 +22,6 @@ async function isAuthed(request: NextRequest): Promise<boolean> {
 }
 
 export const config = {
-  matcher: ["/((?!_next|favicon.svg).*)"],
+  // Wallets fetch the manifest and icon unauthenticated, so they stay outside the guard.
+  matcher: ["/((?!_next|favicon.svg|tonconnect-manifest.json|tonconnect-icon.png).*)"],
 };
