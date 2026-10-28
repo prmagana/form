@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import QRCode from "qrcode";
 import { isWalletInfoCurrentlyInjected, isWalletInfoRemote, type WalletInfo } from "@tonconnect/sdk";
+import { Diamond } from "@/components/diamond/diamond";
+import { TelegramMark } from "@/components/provider-marks";
 import {
   getCuratedWallets,
   getTonConnector,
@@ -44,7 +46,7 @@ export function TonConnectModal({ open, onClose }: Props) {
       if (!alive) return;
       setWallets(list);
       const link = getTonConnector().connect(list.filter(isWalletInfoRemote).map((w) => ({ bridgeUrl: w.bridgeUrl })));
-      if (typeof link === "string") setUniversalQr(await toSvg(link));
+      if (typeof link === "string") setUniversalQr(await toSvg(link, "H"));
     })();
     return () => {
       alive = false;
@@ -88,7 +90,8 @@ export function TonConnectModal({ open, onClose }: Props) {
     setPicked(w);
     setPickedLink(link);
     setPathway("mobile");
-    setPickedQr(await toSvg(link));
+    // Highest correction so the centered logo can cover modules without hurting scans.
+    setPickedQr(await toSvg(link, "H"));
   };
 
   // Extension pathway: connect through the injected bridge if it's there.
@@ -141,7 +144,24 @@ export function TonConnectModal({ open, onClose }: Props) {
         <div className="px-6 pb-6">
           {/* The square: a QR on the mobile pathway, a message state on the others. Same box either way. */}
           {!picked || pathway === "mobile" ? (
-            <QrCard svg={picked ? pickedQr : universalQr} />
+            <QrCard svg={picked ? pickedQr : universalQr}>
+              {picked ? (
+                // eslint-disable-next-line @next/next/no-img-element -- remote registry icon
+                <img src={picked.imageUrl} alt="" draggable={false} className="block size-[68px] rounded-xl" />
+              ) : (
+                // The 3D diamond, sized like the stock modal's 75/256 scaled to our code.
+                // Fallback is our own Telegram tile, drawn like the wallet icons beside it.
+                <Diamond
+                  size={96}
+                  hoverScale={2.75}
+                  fallback={
+                    <span className="flex size-[68px] items-center justify-center rounded-xl bg-[#2AABEE]">
+                      <TelegramMark className="h-[34px] w-auto -translate-x-0.5 text-white" />
+                    </span>
+                  }
+                />
+              )}
+            </QrCard>
           ) : (
             <Square>
               {pathway === "extension" ? (
@@ -247,10 +267,16 @@ function Square({ children }: { children: React.ReactNode }) {
 }
 
 // White card so the QR scans on any theme. Empty state keeps the height while the link mints.
-function QrCard({ svg }: { svg: string | null }) {
+// The center mark sits on a white backdrop, same proportion as the stock modal's 60/256.
+function QrCard({ svg, children }: { svg: string | null; children: React.ReactNode }) {
   return (
-    <div className="mx-auto aspect-square w-full max-w-[368px] rounded-2xl bg-white p-6">
+    <div className="relative mx-auto aspect-square w-full max-w-[368px] rounded-2xl bg-white p-6">
       {svg && <div className="size-full [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: svg }} />}
+      {svg && (
+        <div className="absolute left-1/2 top-1/2 flex size-[84px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-white">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -322,8 +348,8 @@ function RoundButton({
   );
 }
 
-async function toSvg(link: string): Promise<string> {
-  return QRCode.toString(link, { type: "svg", margin: 0, errorCorrectionLevel: "M" });
+async function toSvg(link: string, errorCorrectionLevel: "M" | "H" = "M"): Promise<string> {
+  return QRCode.toString(link, { type: "svg", margin: 0, errorCorrectionLevel });
 }
 
 // Small stroked glyphs for the pathway buttons. Hand-drawn, no icon library.
