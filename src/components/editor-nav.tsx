@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 // Top bar for the form editor. Same frame as the main nav so the switch doesn't jump.
 // The page fills `left` (the title), since only the page has the form's data.
@@ -15,29 +16,11 @@ export function EditorNav({ left }: { left?: React.ReactNode }) {
             draggable={false}
             className="-ml-1.5 flex size-8 shrink-0 items-center justify-center rounded-md text-foreground/60 transition-colors duration-150 hover:bg-foreground/8 hover:text-foreground hover:transition-none"
           >
-            <ChevronLeft className="size-5" />
+            <ChevronLeft aria-hidden size={20} strokeWidth={2} />
           </Link>
           {left}
         </div>
       </div>
     </nav>
-  );
-}
-
-// Drawn chevron. No icon library.
-function ChevronLeft({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m15 18-6-6 6-6" />
-    </svg>
   );
 }

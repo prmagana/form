@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
+import { ChevronLeft } from "lucide-react";
 import QRCode from "qrcode";
 import { isWalletInfoCurrentlyInjected, isWalletInfoRemote, type WalletInfo } from "@tonconnect/sdk";
 import { Diamond } from "@/components/diamond/diamond";
@@ -144,7 +145,7 @@ export function TonConnectModal({ open, onClose }: Props) {
         <div className="relative px-6 pt-6 pb-4 text-center">
           {picked && (
             <RoundButton label="back" onClick={back} className="left-5 top-5">
-              <Chevron className="size-4 rotate-90" />
+              <ChevronLeft aria-hidden size={18} strokeWidth={2.2} />
             </RoundButton>
           )}
           <RoundButton label="close" onClick={close} className="right-5 top-5">
@@ -407,13 +408,6 @@ function ExternalGlyph() {
   );
 }
 
-function Chevron({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden viewBox="0 0 24 24" className={className} {...stroke} strokeWidth={2.2}>
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
 
 function Cross({ className }: { className?: string }) {
   return (

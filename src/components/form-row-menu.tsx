@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { Ellipsis } from "lucide-react";
 import { deleteForm } from "@/app/actions/forms";
 
 // The row's "⋯": shows on row hover (always on touch), opens a menu with a two-step Delete.
@@ -57,7 +58,7 @@ export function FormRowMenu({ id }: { id: string }) {
           open ? "bg-foreground/8 text-foreground opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}
       >
-        <Dots className="size-4" />
+        <Ellipsis aria-hidden size={18} strokeWidth={2} />
       </button>
 
       {open && (
@@ -77,16 +78,5 @@ export function FormRowMenu({ id }: { id: string }) {
         </div>
       )}
     </div>
-  );
-}
-
-// Three dots, drawn. No icon library.
-function Dots({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden viewBox="0 0 24 24" className={className} fill="currentColor">
-      <circle cx="5" cy="12" r="1.9" />
-      <circle cx="12" cy="12" r="1.9" />
-      <circle cx="19" cy="12" r="1.9" />
-    </svg>
   );
 }
