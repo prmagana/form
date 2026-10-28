@@ -1,11 +1,12 @@
 import { notFound, redirect } from "next/navigation";
+import { EditorNav } from "@/components/editor-nav";
 import { FormTitle } from "@/components/form-title";
 import { currentUserId } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 type FormRow = { id: string; name: string };
 
-// Bare editor: just the name for now. Fields come next.
+// Bare editor: the name lives in the nav, the canvas below is empty until fields exist.
 export default async function FormPage({ params }: PageProps<"/edit/[id]">) {
   const userId = await currentUserId();
   if (!userId) redirect("/login");
@@ -19,10 +20,9 @@ export default async function FormPage({ params }: PageProps<"/edit/[id]">) {
   if (!form) notFound();
 
   return (
-    <main className="w-full flex-1 px-4 sm:px-6">
-      <div className="mx-auto w-full max-w-6xl pt-6">
-        <FormTitle id={form.id} initialName={form.name} />
-      </div>
-    </main>
+    <>
+      <EditorNav left={<FormTitle id={form.id} initialName={form.name} />} />
+      <main className="w-full flex-1 px-4 sm:px-6" />
+    </>
   );
 }
