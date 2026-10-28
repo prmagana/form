@@ -72,5 +72,6 @@ export async function verifyIdToken(idToken: string, clientId: string, nonce: st
   const { payload } = await jwtVerify(idToken, JWKS, { issuer: ISSUER, audience: clientId });
   if (payload.nonce !== nonce) throw new Error("Nonce mismatch");
   if (typeof payload.sub !== "string") throw new Error("Token had no sub");
-  return { sub: payload.sub, name: typeof payload.name === "string" ? payload.name : null };
+  const str = (v: unknown) => (typeof v === "string" ? v : null);
+  return { sub: payload.sub, name: str(payload.name), picture: str(payload.picture) };
 }

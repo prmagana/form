@@ -57,7 +57,7 @@ export function TelegramButton({ href }: { href: string }) {
         )}
       </AnimatePresence>
 
-      <motion.span layout="position" transition={spring} className="text-[13px] font-medium tracking-tight">
+      <motion.span layout="position" transition={spring} className="text-[13px] leading-[18px] font-semibold">
         Continue with Telegram
       </motion.span>
 

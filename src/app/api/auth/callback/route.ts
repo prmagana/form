@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
   const clientId = env("TELEGRAM_CLIENT_ID");
   let sub: string;
   let name: string | null;
+  let picture: string | null;
   try {
     const idToken = await exchangeCode({
       code,
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       clientId,
       clientSecret: env("TELEGRAM_CLIENT_SECRET"),
     });
-    ({ sub, name } = await verifyIdToken(idToken, clientId, pending.nonce));
+    ({ sub, name, picture } = await verifyIdToken(idToken, clientId, pending.nonce));
   } catch (err) {
     const message = err instanceof Error ? err.message : "Login failed";
     return new NextResponse(message, { status: 400 });
@@ -45,11 +46,11 @@ export async function GET(request: NextRequest) {
   const now = new Date().toISOString();
   const row = await (await db())
     .prepare(
-      `INSERT INTO users (id, name, created_at, last_login_at) VALUES (?1, ?2, ?3, ?3)
-       ON CONFLICT(id) DO UPDATE SET name = excluded.name, last_login_at = excluded.last_login_at
+      `INSERT INTO users (id, name, picture, created_at, last_login_at) VALUES (?1, ?2, ?3, ?4, ?4)
+       ON CONFLICT(id) DO UPDATE SET name = excluded.name, picture = excluded.picture, last_login_at = excluded.last_login_at
        RETURNING (created_at = last_login_at) AS is_new`,
     )
-    .bind(sub, name, now)
+    .bind(sub, name, picture, now)
     .first<{ is_new: number }>();
 
   if (row?.is_new) {

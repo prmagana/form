@@ -8,8 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-product-sans);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +21,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-product-sans), -apple-system, system-ui, sans-serif;
+  /* Fragment turns ligatures off for this face; keeps letter pairs like "fi" plain. */
+  font-variant-ligatures: none;
 }

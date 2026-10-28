@@ -15,8 +15,8 @@ export async function proxy(request: NextRequest) {
 }
 
 async function isAuthed(request: NextRequest): Promise<boolean> {
-  // Telegram refuses localhost redirects, so dev gets a flag. Never honored in production.
-  if (process.env.AUTH_DEV_BYPASS === "1" && process.env.NODE_ENV !== "production") return true;
+  // Telegram refuses localhost redirects, so dev impersonates a user id. Never honored in production.
+  if (process.env.AUTH_DEV_USER_ID && process.env.NODE_ENV !== "production") return true;
   const value = request.cookies.get(SESSION_COOKIE)?.value;
   return value ? (await verifySession(value)) !== null : false;
 }
