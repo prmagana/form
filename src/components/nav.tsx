@@ -21,7 +21,7 @@ export async function Nav() {
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between">
         {/* The app's only title. Bold is the 600 file, the heaviest Product Sans weight we ship. */}
         <Link href="/" draggable={false} className="select-none text-[22px] leading-7 font-semibold">
-          Form
+          Former
         </Link>
         <div className="flex items-center gap-3.5">
           <AccountChip name={user?.name ?? "Account"} picture={user?.picture ?? null} />
